@@ -17,6 +17,10 @@ def batch_to_bc01(batch):
     ''' Converts CIFAR sample to bc01 tensor'''
     return batch.reshape([-1, 3, 32, 32])
 
+def batch_to_b01c(batch):
+    ''' Converts CIFAR sample to b01c tensor'''
+    return batch_to_bc01(batch).transpose(0,2,3,1)
+
 def labels_to_one_hot(labels):
     ''' Converts list of integers to numpy 2D array with one-hot encoding'''
     labels = np.array(labels)
@@ -69,8 +73,8 @@ class CIFAR10:
         batch_labels = self.train_labels[start_idx:end_idx]
         batch_idx = self.current_batch
 
-        # bc01 + one-hot
-        batch_data = batch_to_bc01(batch_data)
+        # b01c + one-hot
+        batch_data = batch_to_b01c(batch_data)
         batch_labels = labels_to_one_hot(batch_labels)
         
         # Update self.current_batch and self.current_epoch
@@ -93,14 +97,14 @@ class CIFAR10:
                 batch_data = self.test_data[start_idx:end_idx]
                 batch_labels = self.test_labels[start_idx:end_idx]
 
-                # bc01 + one-hot
-                batch_data = batch_to_bc01(batch_data)
+                # b01c + one-hot
+                batch_data = batch_to_b01c(batch_data)
                 batch_labels = labels_to_one_hot(batch_labels)
         
                 batches.append((batch_data, batch_labels))
             return batches
         else:
-            return (batch_to_bc01(self.test_data),
+            return (batch_to_b01c(self.test_data),
                     labels_to_one_hot(self.test_labels))
 
     def getValidationSet(self, asBatches=False):
@@ -112,15 +116,19 @@ class CIFAR10:
                 batch_data = self.validation_data[start_idx:end_idx]
                 batch_labels = self.validation_labels[start_idx:end_idx]
 
-                # bc01 + one-hot
-                batch_data = batch_to_bc01(batch_data)
+                # b01c + one-hot
+                batch_data = batch_to_b01c(batch_data)
                 batch_labels = labels_to_one_hot(batch_labels)
         
                 batches.append((batch_data, batch_labels))
             return batches
         else:
-            return (batch_to_bc01(self.validation_data),
+            return (batch_to_b01c(self.validation_data),
                     labels_to_one_hot(self.validation_labels))
+
+    def reset(self):
+        self.current_batch = 0
+        self.current_epoch = 0
         
 if __name__=='__main__':
     cifar10 = CIFAR10(batch_size=1000)
@@ -129,7 +137,7 @@ if __name__=='__main__':
         print batch_idx, cifar10.n_batches, cifar10.getEpoch()
     batches = cifar10.getTestSet(asBatches=True)
     print len(batches)
-    batches = cifar10.getValidationSet(asBatches=True)
-    print len(batches)
-
-    print batch[0][0][0]
+    data, labels = cifar10.getValidationSet()
+    print labels.sum(axis=0)
+    data, labels = cifar10.getTestSet()
+    print labels.sum(axis=0)
