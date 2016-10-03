@@ -1,0 +1,16 @@
+import os
+import sys
+
+import cPickle as pickle
+
+DIR_BINARIES='/home/Downloads/cifar-10-batches-py/'
+
+def unpickle(filename):
+    f = open(filename, 'rb')
+    dic = pickle.load(f)
+    f.close()
+    return dict
+
+if __name__=='__main__':
+    print unpickle(DIR_BINARIES+'data_batch_1')
+
