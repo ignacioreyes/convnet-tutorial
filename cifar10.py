@@ -3,9 +3,10 @@ import sys
 
 import cPickle as pickle
 import numpy as np
+from sklearn.model_selection import train_test_split
 
-#DIR_BINARIES='/home/ignacio/Downloads/cifar-10-batches-py/'
-DIR_BINARIES='/home/shared/cifar-10-batches-py/'
+DIR_BINARIES='/home/ignacio/Downloads/cifar-10-batches-py/'
+#DIR_BINARIES='/home/shared/cifar-10-batches-py/'
 
 def unpickle(filename):
     f = open(filename, 'rb')
@@ -23,7 +24,6 @@ def batch_to_b01c(batch):
 
 def labels_to_one_hot(labels):
     ''' Converts list of integers to numpy 2D array with one-hot encoding'''
-    labels = np.array(labels)
     N = len(labels)
     one_hot_labels = np.zeros([N, 10], dtype=int)
     one_hot_labels[np.arange(N), labels] = 1
@@ -38,25 +38,25 @@ class CIFAR10:
             d = unpickle(DIR_BINARIES+'data_batch_'+str(bi))
             train_data_list.append(d['data'])
             self.train_labels += d['labels']
+        self.train_labels = np.asarray(self.train_labels)
         self.train_data = np.concatenate(train_data_list, axis=0).astype(np.float32)
-
+        
         # Validation set
         assert validation_proportion > 0. and validation_proportion < 1.
-        n_val = int(len(self.train_labels)*validation_proportion)
-        self.validation_data = self.train_data[-n_val:]
-        self.validation_labels = self.train_labels[-n_val:]
-        self.train_data = self.train_data[:-n_val]
-        self.train_labels = self.train_labels[:-n_val]
+        self.train_data, self.validation_data, self.train_labels, self.validation_labels = train_test_split(
+            self.train_data, self.train_labels, test_size=validation_proportion, random_state=1)
+        
         
         # Test set
         d = unpickle(DIR_BINARIES+'test_batch')
         self.test_data = d['data'].astype(np.float32)
-        self.test_labels = d['labels']
+        self.test_labels = np.asarray(d['labels'])
 
         # Normalize data
         mean = self.train_data.mean(axis=0)
         std = self.train_data.std(axis=0)
         self.train_data = (self.train_data-mean)/std
+        self.validation_data = (self.validation_data-mean)/std
         self.test_data = (self.test_data-mean)/std
 
         # Batching & epochs
