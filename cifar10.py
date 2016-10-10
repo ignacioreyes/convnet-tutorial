@@ -29,7 +29,7 @@ def labels_to_one_hot(labels):
     return one_hot_labels
 
 class CIFAR10:
-    def __init__(self, batch_size=100, validation_proportion=0.1):
+    def __init__(self, batch_size=100, validation_proportion=0.1, augment_data=False):
         # Training set
         train_data_list = []
         self.train_labels = []
@@ -44,8 +44,7 @@ class CIFAR10:
         assert validation_proportion > 0. and validation_proportion < 1.
         self.train_data, self.validation_data, self.train_labels, self.validation_labels = train_test_split(
             self.train_data, self.train_labels, test_size=validation_proportion, random_state=1)
-        
-        
+                
         # Test set
         d = unpickle(DIR_BINARIES+'test_batch')
         self.test_data = d['data'].astype(np.float32)
@@ -65,7 +64,21 @@ class CIFAR10:
         self.train_labels = labels_to_one_hot(self.train_labels)
         self.validation_labels = labels_to_one_hot(self.validation_labels)
         self.test_labels = labels_to_one_hot(self.test_labels)
-        
+
+        # Augment training dataset (horizontal flipping)
+        np.random.seed(seed=1)
+        if augment_data:
+            flipped_train_data = self.train_data[:, :, ::-1, :]
+            self.train_data = np.concatenate([self.train_data, flipped_train_data],
+                                             axis=0)
+            self.train_labels = np.concatenate([self.train_labels, self.train_labels],
+                                               axis=0)
+            
+            # shuffle training set
+            new_idx = np.random.permutation(np.arange(len(self.train_labels)))
+            self.train_data = self.train_data[new_idx]
+            self.train_labels = self.train_labels[new_idx]
+            
         # Batching & epochs
         self.batch_size = batch_size
         self.n_batches = len(self.train_labels)//self.batch_size
