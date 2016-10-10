@@ -5,9 +5,7 @@ import cPickle as pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-
-
-DIR_BINARIES='/home/rodrigo/ayudantia/dataset/'
+DIR_BINARIES='/home/ignacio/Downloads/cifar-10-batches-py/'
 
 def unpickle(filename):
     f = open(filename, 'rb')
@@ -60,6 +58,14 @@ class CIFAR10:
         self.validation_data = (self.validation_data-mean)/std
         self.test_data = (self.test_data-mean)/std
 
+        # Converting to b01c and one-hot encoding
+        self.train_data = batch_to_b01c(self.train_data)
+        self.validation_data = batch_to_b01c(self.validation_data)
+        self.test_data = batch_to_b01c(self.test_data)
+        self.train_labels = labels_to_one_hot(self.train_labels)
+        self.validation_labels = labels_to_one_hot(self.validation_labels)
+        self.test_labels = labels_to_one_hot(self.test_labels)
+        
         # Batching & epochs
         self.batch_size = batch_size
         self.n_batches = len(self.train_labels)//self.batch_size
@@ -73,10 +79,6 @@ class CIFAR10:
         batch_data = self.train_data[start_idx:end_idx]
         batch_labels = self.train_labels[start_idx:end_idx]
         batch_idx = self.current_batch
-
-        # b01c + one-hot
-        batch_data = batch_to_b01c(batch_data)
-        batch_labels = labels_to_one_hot(batch_labels)
         
         # Update self.current_batch and self.current_epoch
         self.current_batch = (self.current_batch+1)%self.n_batches
@@ -97,16 +99,11 @@ class CIFAR10:
                 end_idx = start_idx + self.batch_size 
                 batch_data = self.test_data[start_idx:end_idx]
                 batch_labels = self.test_labels[start_idx:end_idx]
-
-                # b01c + one-hot
-                batch_data = batch_to_b01c(batch_data)
-                batch_labels = labels_to_one_hot(batch_labels)
         
                 batches.append((batch_data, batch_labels))
             return batches
         else:
-            return (batch_to_b01c(self.test_data),
-                    labels_to_one_hot(self.test_labels))
+            return (self.test_data, self.test_labels)
 
     def getValidationSet(self, asBatches=False):
         if asBatches:
@@ -117,15 +114,10 @@ class CIFAR10:
                 batch_data = self.validation_data[start_idx:end_idx]
                 batch_labels = self.validation_labels[start_idx:end_idx]
 
-                # b01c + one-hot
-                batch_data = batch_to_b01c(batch_data)
-                batch_labels = labels_to_one_hot(batch_labels)
-        
                 batches.append((batch_data, batch_labels))
             return batches
         else:
-            return (batch_to_b01c(self.validation_data),
-                    labels_to_one_hot(self.validation_labels))
+            return (self.validation_data, self.validation_labels)
 
     def reset(self):
         self.current_batch = 0
