@@ -5,7 +5,7 @@ import cPickle as pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-DIR_BINARIES='/home/ignacio/Downloads/cifar-10-batches-py/'
+DIR_BINARIES='/home/shared/cifar-10-batches-py/'
 
 def unpickle(filename):
     f = open(filename, 'rb')
