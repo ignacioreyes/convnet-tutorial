@@ -38,7 +38,7 @@ class CIFAR10:
             urlretrieve('https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz',
                         tmp_filename)
             tar = tarfile.open(tmp_filename, "r:gz")
-            tar.extractall(path=DIR_BINARIES)
+            tar.extractall(path=DIR_BINARIES+'../')
             tar.close()
         # Training set
         train_data_list = []
