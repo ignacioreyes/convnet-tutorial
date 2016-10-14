@@ -1,6 +1,9 @@
 import os
 import sys
 
+from urllib import urlretrieve
+import tarfile
+
 import cPickle as pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -29,7 +32,14 @@ def labels_to_one_hot(labels):
     return one_hot_labels
 
 class CIFAR10:
-    def __init__(self, batch_size=100, validation_proportion=0.1, augment_data=False):
+    def __init__(self, batch_size=100, validation_proportion=0.1, augment_data=False, download=False):
+        if download:
+            tmp_filename = '/tmp/cifar-10-python.tar.gz'
+            urlretrieve('https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz',
+                        tmp_filename)
+            tar = tarfile.open(tmp_filename, "r:gz")
+            tar.extractall(path=DIR_BINARIES)
+            tar.close()
         # Training set
         train_data_list = []
         self.train_labels = []
