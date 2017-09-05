@@ -1,18 +1,22 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import os
 import sys
 
-from urllib import urlretrieve
+from urllib.request import urlretrieve
 import tarfile
 
-import cPickle as pickle
+import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-DIR_BINARIES='/home/shared/cifar-10-batches-py/'
+DIR_BINARIES='./cifar-10-batches-py/'
 
 def unpickle(filename):
     f = open(filename, 'rb')
-    dic = pickle.load(f)
+    dic = pickle.load(f, encoding='latin1')
     f.close()
     return dic
 
@@ -32,8 +36,10 @@ def labels_to_one_hot(labels):
     return one_hot_labels
 
 class CIFAR10:
-    def __init__(self, batch_size=100, validation_proportion=0.1, augment_data=False, download=False):
-        if download:
+    def __init__(self, batch_size=100, validation_proportion=0.1, augment_data=False):
+        data_available = os.path.isfile(DIR_BINARIES+'data_batch_1')
+        if not data_available:
+            print('Downloading CIFAR 10...')
             tmp_filename = '/tmp/cifar-10-python.tar.gz'
             urlretrieve('https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz',
                         tmp_filename)
@@ -150,10 +156,10 @@ if __name__=='__main__':
     cifar10 = CIFAR10(batch_size=1000)
     while cifar10.getEpoch()<2:
         batch, batch_idx = cifar10.nextBatch()
-        print batch_idx, cifar10.n_batches, cifar10.getEpoch()
+        print(batch_idx, cifar10.n_batches, cifar10.getEpoch())
     batches = cifar10.getTestSet(asBatches=True)
-    print len(batches)
+    print(len(batches))
     data, labels = cifar10.getValidationSet()
-    print labels.sum(axis=0)
+    print(labels.sum(axis=0))
     data, labels = cifar10.getTestSet()
-    print labels.sum(axis=0)
+    print(labels.sum(axis=0))
