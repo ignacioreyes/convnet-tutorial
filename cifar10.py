@@ -81,19 +81,8 @@ class CIFAR10:
         self.validation_labels = labels_to_one_hot(self.validation_labels)
         self.test_labels = labels_to_one_hot(self.test_labels)
 
-        # Augment training dataset (horizontal flipping)
         np.random.seed(seed=1)
-        if augment_data:
-            flipped_train_data = self.train_data[:, :, ::-1, :]
-            self.train_data = np.concatenate([self.train_data, flipped_train_data],
-                                             axis=0)
-            self.train_labels = np.concatenate([self.train_labels, self.train_labels],
-                                               axis=0)
-            
-            # shuffle training set
-            new_idx = np.random.permutation(np.arange(len(self.train_labels)))
-            self.train_data = self.train_data[new_idx]
-            self.train_labels = self.train_labels[new_idx]
+        self.augment_data = augment_data
             
         # Batching & epochs
         self.batch_size = batch_size
@@ -108,11 +97,21 @@ class CIFAR10:
         batch_data = self.train_data[start_idx:end_idx]
         batch_labels = self.train_labels[start_idx:end_idx]
         batch_idx = self.current_batch
-        
+
+        if self.augment_data:
+            if np.random.randint(0, 2) == 0:
+                batch_data = batch_data[:, :, ::-1, :]
+            batch_data += np.random.randn(self.batch_size, 1, 1, 3)*0.05
+            
         # Update self.current_batch and self.current_epoch
         self.current_batch = (self.current_batch+1)%self.n_batches
         if self.current_batch != batch_idx+1:
             self.current_epoch += 1
+
+            # shuffle training data
+            new_order = np.random.permutation(np.arange(len(self.train_labels)))
+            self.train_data = self.train_data[new_order]
+            self.train_labels = self.train_labels[new_order]
             
         return ((batch_data, batch_labels), batch_idx)
     
