@@ -14,6 +14,23 @@ from sklearn.model_selection import train_test_split
 
 DIR_BINARIES='./cifar-10-batches-py/'
 
+def train_test_split(samples, labels, test_percentage):
+    assert len(samples) == len(labels)
+    assert 0 < test_percentage < 1
+    test_size = int(len(samples)*test_percentage)
+    new_order = np.random.permutation(np.arange(len(samples)))
+    samples = samples[new_order]
+    labels = labels[new_order]
+    
+    train_size = len(samples) - test_size
+    train_samples = samples[:train_size]
+    train_labels = labels[:train_size]
+
+    test_samples = samples[-test_size:]
+    test_labels = labels[-test_size:]
+
+    return train_samples, test_samples, train_labels, test_labels
+
 def unpickle(filename):
     f = open(filename, 'rb')
     dic = pickle.load(f, encoding='latin1')
@@ -58,9 +75,10 @@ class CIFAR10:
         
         # Validation set
         assert validation_proportion > 0. and validation_proportion < 1.
+        np.random.seed(1)
         self.train_data, self.validation_data, self.train_labels, self.validation_labels = train_test_split(
-            self.train_data, self.train_labels, test_size=validation_proportion, random_state=1)
-                
+            self.train_data, self.train_labels, test_percentage=validation_proportion)
+
         # Test set
         d = unpickle(DIR_BINARIES+'test_batch')
         self.test_data = d['data'].astype(np.float32)
