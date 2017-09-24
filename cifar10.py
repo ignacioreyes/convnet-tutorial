@@ -23,12 +23,12 @@ def train_test_split(samples, labels, test_percentage):
     labels = labels[new_order]
     
     train_size = len(samples) - test_size
-    train_samples = samples[:train_size]
-    train_labels = labels[:train_size]
+    train_samples = samples[-train_size:]
+    train_labels = labels[-train_size:]
 
-    test_samples = samples[-test_size:]
-    test_labels = labels[-test_size:]
-
+    test_samples = samples[:test_size]
+    test_labels = labels[:test_size]
+    
     return train_samples, test_samples, train_labels, test_labels
 
 def unpickle(filename):
